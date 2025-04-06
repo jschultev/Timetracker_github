@@ -2,6 +2,9 @@ The Timetracker isn't perfect yet.
 There are some design flaws, general mistakes in the initialization and also just some cosmetic changes I would like to do:
 A list includes:
 
+Most urgent:
+  1. Uncaught (in promise) ReferenceError: sel is not defined
+
 General Flaws:
   1. window.categories is a js.object, which has no order. Therefore the categorys are in a random ordern when shown.
     -> Change the object to an array with all its fixes
