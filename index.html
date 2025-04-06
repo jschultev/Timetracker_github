@@ -37,6 +37,41 @@
     gap: 1em;
   }
 
+  .entry-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: flex-end;
+  justify-content: flex-start;
+  margin-bottom: 1.5em;
+}
+
+.entry-filters-row > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  max-width: 260px;
+  flex: 1;
+}
+
+.selected-option {
+  padding: 0.5em 0.8em;
+  font-size: 1em;
+  min-height: 2.4em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+
+
+#entryDateInputContainer {
+  min-height: 2.5em; /* oder etwas mehr bei Bedarf */
+}
+
+
   table {
     font-size: 0.85em;
     overflow-x: auto;
@@ -684,6 +719,7 @@ input, select, textarea, button {
   color: #2f64c4;
 }
 
+
 .category-dropdown {
   position: relative;
   width: 100%;
@@ -1312,6 +1348,8 @@ window.categories = {
 
   document.addEventListener('DOMContentLoaded', () => {
     populateAllCategorySelects();
+    populateOverviewCategoryFilter();
+
     document.getElementById('dateInput').value = formatDate(new Date());
 
     document.getElementById('manualForm').addEventListener('submit', e => {
@@ -1415,20 +1453,22 @@ updateCategoryOptions();
   });
 
   function updateCategoryOptions() {
-  const set = new Set(data.map(e => e.category));
-  const sel = document.getElementById('entryCategoryFilter');
-sel.innerHTML = '<option value="Alle">Alle</option>';
+  const category = window.currentEntryCategory || 'Alle';
 
-Object.keys(window.categories || {}).forEach(cat => {
-  const opt = document.createElement('option');
-  opt.value = cat;
-  opt.textContent = cat;
-  opt.style.color = window.categories[cat]; // ✅ Textfarbe = Kategorie-Farbe
+  sel.innerHTML = '<option value="Alle">Alle</option>';
 
-  sel.appendChild(opt);
-});
+  Object.entries(window.categories || {}).forEach(([cat, color]) => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    opt.style.color = color;
+    sel.appendChild(opt);
+  });
 
+  // 🆕 Auch für Übersicht befüllen
+  populateOverviewCategoryFilter();
 }
+
 
 //alles ab hier zu "Dauer"
   function timeToDecimal(timeStr) {
@@ -1570,7 +1610,7 @@ if (!category) {
   window.data = [];
 }
 
-    const category = document.getElementById('entryCategoryFilter').value;
+    const category = window.currentEntryCategory || 'Alle';
     const container = document.getElementById('entriesList');
     let filtered = [...data];
 
@@ -1820,6 +1860,11 @@ if (oldBarContainer) oldBarContainer.remove();
   } else {
     filtered = [...data];
   }
+
+  if (window.currentOverviewCategory && window.currentOverviewCategory !== 'Alle') {
+  filtered = filtered.filter(e => e.category === window.currentOverviewCategory);
+}
+
 
   const ctx = document.getElementById('overviewChart').getContext('2d');
   if (window.overviewChartInstance) window.overviewChartInstance.destroy();
@@ -2154,6 +2199,32 @@ function setOverviewFilter(type) {
   updateOverviewDateInput();
   renderOverview();
 }
+
+function updateOverviewCategory() {
+  const sel = document.getElementById('overviewCategoryFilter');
+  window.currentOverviewCategory = sel.value;
+  renderOverview(); // ⬅️ neu rendern!
+}
+
+function populateOverviewCategoryFilter() {
+  const sel = document.getElementById('overviewCategoryFilter');
+  if (!sel) return;
+
+  sel.innerHTML = '<option value="Alle">Alle</option>';
+
+  // Hole aus window.categories dynamisch
+  if (window.categories) {
+    Object.entries(window.categories).forEach(([cat, color]) => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      opt.style.color = color;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+
 
 function changeWeek(offset) {
   currentWeekOffset += offset;
@@ -2570,6 +2641,15 @@ function setupClickOutsideClose(modalId, contentSelector, closeFunction) {
 <button id="btn-filter-month" onclick="setOverviewFilter('month')">Monat</button>
 <button id="btn-filter-year" onclick="setOverviewFilter('year')">Jahr</button>
 </div>
+
+<div class="category-dropdown" style="max-width: 300px; margin: 0 auto 1em;">
+  <div id="overviewCategorySelected" class="selected-option" onclick="toggleOverviewCategoryDropdown()">Kategorie wählen</div>
+  <div id="overviewDropdownContent" class="dropdown-content">
+    <input type="text" id="overviewSearchInput" placeholder="Kategorie suchen..." class="category-search">
+    <ul id="overviewCategoryOptions" class="options-list"></ul>
+  </div>
+</div>
+
 <div id="weekNav" style="text-align: center; margin-bottom: 1em; display: none;"></div>
 <div id="overviewDateWrapper" style="margin-bottom: 1em;">
 <input id="overviewDate" onchange="renderOverview()" type="date"/>
@@ -2581,27 +2661,36 @@ function setupClickOutsideClose(modalId, contentSelector, closeFunction) {
 <!-- Einträge -->
 <div class="section" id="entries">
 <h2>Einträge</h2>
-<div class="entry-filters">
-<div>
-<label>Zeitraum filtern:
-            <select id="entryDateFilterType" onchange="updateEntryDateInput()">
-<option value="none">Alle</option>
-<option value="day">Tag</option>
-<option value="week">Woche</option>
-<option value="month">Monat</option>
-<option value="year">Jahr</option>
-</select>
-</label>
-<div id="entryDateInputContainer"></div>
+<div class="entry-filters-row" style="display: flex; flex-wrap: wrap; gap: 1em; align-items: flex-end; margin-bottom: 1.5em;">
+  <div style="flex: 1; min-width: 140px; max-width: 200px;">
+    <label for="entryDateFilterType">Zeitraum filtern:</label>
+    <select id="entryDateFilterType" onchange="updateEntryDateInput()" style="width: 100%;">
+      <option value="none">Alle</option>
+      <option value="day">Tag</option>
+      <option value="week">Woche</option>
+      <option value="month">Monat</option>
+      <option value="year">Jahr</option>
+    </select>
+  </div>
+
+  <div id="entryDateInputContainer" style="flex: 1; min-width: 140px; max-width: 200px;">
+    <!-- hier kommt der Jahr/Monat/Woche Input rein -->
+  </div>
+
+  <div style="flex: 1; min-width: 160px; max-width: 240px;">
+    <label for="entryCategorySelected">Kategorie filtern:</label>
+    <div class="category-dropdown" style="width: 100%;">
+      <div id="entryCategorySelected" class="selected-option" onclick="toggleEntryCategoryDropdown()">Alle</div>
+      <div id="entryDropdownContent" class="dropdown-content">
+        <input type="text" id="entrySearchInput" placeholder="Kategorie suchen..." class="category-search">
+        <ul id="entryCategoryOptions" class="options-list"></ul>
+      </div>
+    </div>
+  </div>
+  
 </div>
-<div>
-<label>Kategorie filtern:
-            <select id="entryCategoryFilter" onchange="updateEntries()">
-<option value="Alle">Alle</option>
-</select>
-</label>
-</div>
-</div>
+
+
 <div id="entriesList"></div>
 <div id="entriesList"></div>
 </div>
@@ -2712,7 +2801,6 @@ window.populateAllCategorySelects = function () {
   };
 
   const app = initializeApp(firebaseConfig);
-
   const auth = getAuth(app);
   window.auth = auth
   const db = getFirestore(app);
@@ -3038,7 +3126,9 @@ window.toggleCategoryDropdown = function () {
 const dropdownPairs = [
   { buttonId: 'categorySelected', dropdownId: 'categoryDropdownContent' },
   { buttonId: 'stopwatchCategorySelected', dropdownId: 'stopwatchDropdownContent' },
-  { buttonId: 'editCategorySelected', dropdownId: 'editDropdownContent' }
+  { buttonId: 'editCategorySelected', dropdownId: 'editDropdownContent' },
+  { buttonId: 'overviewCategorySelected', dropdownId: 'overviewDropdownContent' },
+  { buttonId: 'entryCategorySelected', dropdownId: 'entryDropdownContent' }
 ];
 
 
@@ -3162,6 +3252,110 @@ document.getElementById('editSearchInput').addEventListener('input', (e) => {
 });
 
 
+window.toggleOverviewCategoryDropdown = function () {
+  const dropdown = document.getElementById('overviewDropdownContent');
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+  document.getElementById('overviewSearchInput').value = '';
+  window.renderFilteredOverviewCategories('');
+};
+
+window.renderFilteredOverviewCategories = function (filter) {
+  const list = document.getElementById('overviewCategoryOptions');
+  list.innerHTML = '';
+
+  // 🆕 Zuerst "Alle"-Option einfügen
+  const alleOption = document.createElement('li');
+  alleOption.textContent = 'Alle';
+  alleOption.style.color = '#000';
+  alleOption.onclick = () => {
+    const label = document.getElementById('overviewCategorySelected');
+    label.textContent = 'Alle';
+    label.style.color = '#000';
+    window.currentOverviewCategory = 'Alle';
+    document.getElementById('overviewDropdownContent').style.display = 'none';
+    renderOverview();
+  };
+  list.appendChild(alleOption);
+
+  // 🧠 Dann alle Kategorien einfügen
+  for (const [name, color] of Object.entries(window.categories || {})) {
+    if (!name.toLowerCase().startsWith(filter.toLowerCase())) continue;
+
+    const li = document.createElement('li');
+    li.textContent = name;
+    li.style.color = color;
+
+    li.onclick = () => {
+      const label = document.getElementById('overviewCategorySelected');
+      label.textContent = name;
+      label.style.color = color;
+
+      document.getElementById('overviewDropdownContent').style.display = 'none';
+      window.currentOverviewCategory = name;
+      renderOverview();
+    };
+    document.getElementById('overviewSearchInput').addEventListener('input', (e) => {
+  const value = e.target.value.trim();
+  window.renderFilteredOverviewCategories(value);
+});
+
+
+    list.appendChild(li);
+  }
+  
+};
+
+
+window.toggleEntryCategoryDropdown = function () {
+  const dropdown = document.getElementById('entryDropdownContent');
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+  document.getElementById('entrySearchInput').value = '';
+  window.renderFilteredCategoriesEntry('');
+};
+
+window.renderFilteredCategoriesEntry = function (filter) {
+  const list = document.getElementById('entryCategoryOptions');
+  list.innerHTML = '';
+
+  // "Alle"-Option
+  const alleOption = document.createElement('li');
+  alleOption.textContent = 'Alle';
+  alleOption.style.color = '#000';
+  alleOption.onclick = () => {
+    const label = document.getElementById('entryCategorySelected');
+    label.textContent = 'Alle';
+    label.style.color = '#000';
+    window.currentEntryCategory = 'Alle';
+    document.getElementById('entryDropdownContent').style.display = 'none';
+    updateEntries();
+  };
+  list.appendChild(alleOption);
+
+  for (const [name, color] of Object.entries(window.categories || {})) {
+    if (!name.toLowerCase().startsWith(filter.toLowerCase())) continue;
+
+    const li = document.createElement('li');
+    li.textContent = name;
+    li.style.color = color;
+
+    li.onclick = () => {
+      const label = document.getElementById('entryCategorySelected');
+      label.textContent = name;
+      label.style.color = color;
+      window.currentEntryCategory = name;
+
+      document.getElementById('entryDropdownContent').style.display = 'none';
+      updateEntries();
+    };
+
+    list.appendChild(li);
+  }
+};
+
+document.getElementById('entrySearchInput').addEventListener('input', (e) => {
+  const value = e.target.value.trim();
+  window.renderFilteredCategoriesEntry(value);
+});
 
 
 </script>
