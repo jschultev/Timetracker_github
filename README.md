@@ -2,6 +2,7 @@
 This is my own timetracker which I built with the help of ChatGPT. Already i can say, that the next time I'll do something like this I will definitely work with Git, because this was the horror. Also I spent way to much time on this instead of studying for university, for which it was originally intended.
 
 If you want to have acces to my database, just write me an email to j.schultevels@gmail.com
+Also, do not hesitate to contact me regarding any feedback. On my ToDo list you can see what has to be fixed and what (~since uploading) already has been. Feel free to tell me about new things I should fix!
 
 *Finally*
 After around 40 hours (fortunately I can track from now on and tell the exact hours) I've "completed" my chatgpt timetracker.
