@@ -5,20 +5,22 @@ A list includes:
 Most urgent:
   1. Uncaught (in promise) ReferenceError: sel is not defined
 
-General Flaws:
+General:
   1. window.categories is a js.object, which has no order. Therefore the categorys are in a random ordern when shown.
     -> Change the object to an array with all its fixes
 
-  3. when a stop watch entry is less than one minute, rangig from the same start time to endtime, then in the overview section the time filter "day" doens't
+  3. When a stop watch entry is less than one minute, rangig from the same start time to endtime, then in the overview section the time filter "day" doens't
      respond well and wrnogly inserts in the timeline basically 24 hours. 
     -> (Maybe) set duration always to at least 00:01 and the endTime to at least (startTime + 1) 
 
-  4. when adding an entry which is more than 24h it won't display it correctly and save the entry with only the surplus of 24 hours (25h entry => 1h entry).
+  4. When adding an entry which is more than 24h it won't display it correctly and save the entry with only the surplus of 24 hours (25h entry => 1h entry).
+
+  5. The overview section "day" should also have an arrow option to go to the previous/next day.
 
 Design Flaws:
   2. Entries table doesn't respond well to long descriptions, since it goes over boundary
 
-  3. Passowrt Hide/Show is in the middle of the input field, not included for now
+  3. Passowrd Hide/Show is in the middle of the input field, not included for now
 
   4. Mobile version works, but very poorly. Login and Categories isn't well positioned, everythin is too small (charts, space for lists), 
      some filter buttons are too wide. but it should be usable for now
@@ -29,12 +31,12 @@ Design:
 
 
 Done:
-  GF:
+  G:
     2. An entry which goes over 2 days is wrongfully displayed in the overveiw section.
-    -> split such an entry in 2 or more entrys and then display it correctly
+    -> Split such an entry in 2 or more entrys and then display it correctly
 
   DF:
     1. When applying a time filter to entrys the same height of time filter and category filter gets messed up
-    -> including new entry-filter-row and new order of div's
+    -> Including new entry-filter-row and new order of div's
 
   D:
