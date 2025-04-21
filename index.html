@@ -321,27 +321,50 @@ form button {
 #entriesList {
   max-width: 1100px;
   margin: 2em auto;
+  overflow-x: auto; /* sicherstellen, dass scrollbar erscheint, wenn nötig */
 }
 
 #entriesList table {
   width: 100%;
   border-collapse: collapse;
   font-size: 1.05em;
+  table-layout: fixed; /* WICHTIG: fixe Tabellenstruktur erzwingen */
 }
 
+/* Kopf- und Datenzellen allgemein */
 #entriesList th, #entriesList td {
   padding: 0.5em 0.8em;
   border: 1px solid #ccc;
   vertical-align: middle;
+  word-wrap: break-word; /* lange Wörter umbrechen */
 }
 
-/* Beschreibung optional kürzen */
-#entriesList td:nth-child(6) {
-  max-width: 250px;
+/* Fixe Breiten für spezifische Spalten setzen 
+#entriesList th:nth-child(1), #entriesList td:nth-child(1) { width: 100px; } /* Datum 
+#entriesList th:nth-child(2), #entriesList td:nth-child(2) { width: 80px; }  /* Start 
+#entriesList th:nth-child(3), #entriesList td:nth-child(3) { width: 80px; }  /* Ende 
+#entriesList th:nth-child(4), #entriesList td:nth-child(4) { width: 90px; }  /* Dauer 
+#entriesList th:nth-child(5), #entriesList td:nth-child(5) { width: 120px; } /* Kategorie 
+#entriesList th:nth-child(6), #entriesList td:nth-child(6) { 
+  width: 250px; /* Beschreibung fixe Breite 
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+#entriesList th:nth-child(7), #entriesList td:nth-child(7) { width: 150px; } /* Aktion */
+
+/* Fixe Breiten für spezifische Spalten setzen */
+#entriesList th:nth-child(1), #entriesList td:nth-child(1) { width: 85px; } /* Datum */
+#entriesList th:nth-child(2), #entriesList td:nth-child(2) { width: 40px; }  /* Start */
+#entriesList th:nth-child(3), #entriesList td:nth-child(3) { width: 40px; }  /* Ende */
+#entriesList th:nth-child(4), #entriesList td:nth-child(4) { width: 120px; } /* Kategorie */
+#entriesList th:nth-child(5), #entriesList td:nth-child(5) { 
+  width: 150px; /* Beschreibung fixe Breite */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#entriesList th:nth-child(6), #entriesList td:nth-child(6) { width: 180px; } /* Aktion */
 
 /* Button-Zelle */
 .entry-actions {
@@ -1005,6 +1028,70 @@ form {
   background: #2f64c4;
 }
 
+.pagination-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+}
+
+.pagination-btn {
+  padding: 0.2em 0.4em; /* kleiner Padding */
+  font-size: 0.85em;    /* kleiner Schrift */
+  min-width: 90px;      /* Fixe kleine Breite (passt zum längsten Wort "Vorherige") */
+  border-radius: 6px;
+  border: none;
+  background-color: #e4eaf3;
+  color: #3976e8;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #d4ddef;
+}
+
+.pagination-btn:disabled {
+  background-color: #f0f0f0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 0.9em;
+  text-align: center;
+  white-space: nowrap;     /* Verhindert Zeilenumbrüche */
+  display: flex;           /* Nebeneinander positionieren */
+  gap: 0.3em;              /* Abstand zwischen Wörtern einstellen */
+  align-items: center;     /* Vertikal zentrieren */
+  justify-content: center; /* Horizontal zentrieren */
+}
+
+
+.pagination-jump {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.9em;
+  margin-bottom: 0.3em;
+}
+
+.pagination-jump input {
+  width: 3em;
+  padding: 0.2em;
+  font-size: 0.9em;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 </style>
 </head>
 <body>
@@ -1226,6 +1313,70 @@ form {
 </form>
 </div>
 <script>
+
+  //Seiten bei Entries
+  let currentPage = 1;
+  const entriesPerPage = 30;
+
+  function renderPaginationControls(totalEntries) {
+  const totalPages = Math.ceil(totalEntries / entriesPerPage);
+  const paginationContainer = document.getElementById('paginationControls');
+  
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = '';
+    return;
+  }
+
+  paginationContainer.innerHTML = `
+  <div class="pagination-wrapper">
+    <div class="pagination-jump">
+      Gehe zu Seite: 
+      <input type="number" id="pageJumpInput" min="1" max="${totalPages}" placeholder="#" 
+             onkeydown="if(event.key==='Enter'){jumpToPage(${totalPages});}" 
+             onblur="jumpToPage(${totalPages})"/>
+    </div>
+
+    <div class="pagination-buttons">
+      <button class="pagination-btn" onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>
+        &laquo; Erste
+      </button>
+      <button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+        &lsaquo; Vorherige
+      </button>
+
+      <span class="pagination-info">Seite ${currentPage} von ${totalPages}</span>
+
+      <button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+        Nächste &rsaquo;
+      </button>
+      <button class="pagination-btn" onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>
+        Letzte &raquo;
+      </button>
+    </div>
+  </div>
+`;
+
+}
+
+function jumpToPage(totalPages) {
+  const input = document.getElementById('pageJumpInput');
+  let pageNum = parseInt(input.value, 10);
+
+  if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
+    currentPage = pageNum;
+    updateEntries();
+  } else {
+    input.value = '';  // Reset bei ungültiger Eingabe
+  }
+}
+
+
+function changePage(pageNum) {
+  currentPage = pageNum;
+  updateEntries();
+}
+
+
   function customConfirm(message, onConfirm) {
   const modal = document.getElementById('confirmModal');
   const text = document.getElementById('confirmText');
@@ -1550,7 +1701,10 @@ if (type === 'none') {
       clearInterval(stopwatchInterval);
       stopwatchInterval = null;
       const end = new Date();
-      const duration = (end - stopwatchStart) / 1000 / 60 / 60;
+      let duration = (end - stopwatchStart) / 1000 / 60 / 60;
+        if (duration < 1 / 60) {
+          duration = 1 / 60; // mindestens 1 Minute
+        }
       const startTime = stopwatchStart.toTimeString().substring(0,5);
       const endTime = end.toTimeString().substring(0,5);
       const date = formatDate(stopwatchStart);
@@ -2692,7 +2846,7 @@ function setupClickOutsideClose(modalId, contentSelector, closeFunction) {
 
 
 <div id="entriesList"></div>
-<div id="entriesList"></div>
+<div id="paginationControls" style="text-align: center; margin-top: 1.2em;"></div>
 </div>
 <!-- Modal für Bearbeiten -->
 <div id="editModal">
