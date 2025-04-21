@@ -1804,30 +1804,45 @@ if (type !== 'none' && dateInput) {
     filtered = filtered.filter(e => e.date.startsWith(val));
   }
 }
-  
-    if (filtered.length === 0) {
+
+  // Pagination Berechnung
+  const totalEntries = filtered.length;
+  const totalPages = Math.ceil(totalEntries / entriesPerPage);
+
+  currentPage = Math.min(currentPage, totalPages) || 1;
+  const paginatedEntries = filtered.slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage);
+
+    if (paginatedEntries.length === 0) {
       container.innerHTML = '<p>Keine Einträge gefunden.</p>';
+      document.getElementById('paginationControls').innerHTML = '';
       return;
     }
   
-    let html = '<table><thead><tr><th>Datum</th><th>Start</th><th>Ende</th><th>Dauer</th><th>Kategorie</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody>';
-        filtered.forEach((e) => {
-  const dur = `${Math.floor(e.duration)}h ${Math.round((e.duration % 1) * 60)}min`;
+    let html = '<table><thead><tr><th>Datum</th><th>Start</th><th>Ende</th><th>Kategorie</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody>';
+
+paginatedEntries.forEach((e, idx) => {
   const originalIndex = data.indexOf(e);
   html += `<tr>
-    <td>${formatDisplayDate(e.date)}</td><td>${e.startTime}</td><td>${e.endTime}</td><td>${dur}</td>
-    <td style="color:${categories[e.category]}">${e.category}</td><td>${e.description || ''}</td>
+    <td>${formatDisplayDate(e.date)}</td>
+    <td>${e.startTime}</td>
+    <td>${e.endTime}</td>
+    <td style="color:${categories[e.category]}">${e.category}</td>
+    <td>${e.description || ''}</td>
     <td>
-       <div class="entry-actions">
+      <div class="entry-actions">
         <button onclick="openEditModal(${originalIndex})" class="entry-btn">🖊️ Bearbeiten</button>
         <button onclick="deleteEntry(${originalIndex})" class="entry-btn">🗑️ Löschen</button>
-       </div>
+      </div>
     </td>
   </tr>`;
 });
-    html += '</tbody></table>';
-    container.innerHTML = html;
-  }
+
+html += '</tbody></table>';
+
+container.innerHTML = html;
+
+renderPaginationControls(totalEntries);
+}
   
   let currentEditOriginalCategory = null; // ganz oben global
 

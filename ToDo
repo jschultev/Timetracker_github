@@ -9,8 +9,7 @@ General:
   1. window.categories is a js.object, which has no order. Therefore the categorys are in a random ordern when shown.
     -> Change the object to an array with all its fixes
 
-  3. When a stop watch entry is less than one minute, rangig from the same start time to endtime, then in the overview section the time filter "day" doens't
-     respond well and wrnogly inserts in the timeline basically 24 hours. 
+  3. When a stop watch entry is less than one minute, rangig from the same start time to endtime, then in the overview section the time filter "day" doesn't respond well and wrongly inserts in the timeline basically 24 hours. 
     -> (Maybe) set duration always to at least 00:01 and the endTime to at least (startTime + 1) 
 
   4. When adding an entry which is more than 24h it won't display it correctly and save the entry with only the surplus of 24 hours (25h entry => 1h entry).
