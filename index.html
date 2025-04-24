@@ -10,6 +10,19 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 
+
+/* Chrome, Edge, Safari */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+/* Firefox & Standard */
+input[type="time"] {
+  appearance: none;            /* Standard-Property */
+  -webkit-appearance: none;    /* WebKit/Safari/Chrome */
+  -moz-appearance: textfield;  /* Firefox */
+}
+
 /*Mobile*/
 @media (max-width: 600px) {
   body {
@@ -1698,6 +1711,12 @@ if (type === 'none') {
     }
     const btn = document.getElementById('stopwatchButton');
     if (stopwatchInterval) {
+      //Überprüfe ob Kategorie Ausgewählt bevor man stoppt
+      const category = window.selectedStopwatchCategory;
+      if (!category) {
+        showMessage("Bitte eine Kategorie auswählen.", "warning");
+        return;
+      }
       clearInterval(stopwatchInterval);
       stopwatchInterval = null;
       const end = new Date();
@@ -1708,12 +1727,6 @@ if (type === 'none') {
       const startTime = stopwatchStart.toTimeString().substring(0,5);
       const endTime = end.toTimeString().substring(0,5);
       const date = formatDate(stopwatchStart);
-      const category = window.selectedStopwatchCategory;
-if (!category) {
-  showMessage("Bitte eine Kategorie auswählen.", "warning");
-  return;
-}
-
       const color = categories[category];
       const description = document.getElementById('stopwatchDescription').value;
   

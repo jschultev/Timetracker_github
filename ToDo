@@ -26,7 +26,7 @@ Design Flaws:
 
 
 Design:
-  1. Just generally go over everything and enhance it 
+  0.1 Just generally go over everything and enhance it 
 
 
 Done:
@@ -34,8 +34,13 @@ Done:
     2. An entry which goes over 2 days is wrongfully displayed in the overveiw section.
     -> Split such an entry in 2 or more entrys and then display it correctly
 
+    6. Stopwatch stops when no category is selected and then restars:
+    -> Switched the order of clearinterval and if statement for the category.
+
   DF:
     1. When applying a time filter to entrys the same height of time filter and category filter gets messed up
     -> Including new entry-filter-row and new order of div's
 
   D:
+    1. Clock is  appearing for a time input (only on chrome).
+    -> Was only a style sheet, because browsers do it themselves when one uses "time"
