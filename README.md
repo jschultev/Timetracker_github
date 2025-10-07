@@ -8,3 +8,4 @@ Also, do not hesitate to contact me regarding any feedback. On my ToDo list you 
 After around 40 hours (fortunately I can track from now on and tell the exact hours) I've "completed" my chatgpt timetracker.
 It's far from perfect, as especially the mobile part isn't anywhere near good at all, which was originally my intention.
 But still it is ready for use and I've got a midterm in 3 days, so like I finally need to stop (felt like a really long trip as the hours just went by).
+To show this to FEDE
